@@ -11,13 +11,7 @@
   },
   "creator": "{{author}}",
   "license": "MIT",
-  "dependencies": {
-    "@fm/network": "0.0.2-beta.6",
-    "axios": "0.19.2",
-    "js-cookie": "2.2.1",
-    "js-md5": "0.7.3",
-    "uuid": "7.0.2"
-  },
+  "dependencies": {},
   "devDependencies": {
     "mitan-component": "0.0.1-beta.5"
   },
