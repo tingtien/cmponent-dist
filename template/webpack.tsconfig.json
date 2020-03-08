@@ -9,6 +9,5 @@
     "declaration": false,
     "lib":["es2015", "dom"]
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "**/__tests__/*", "demo"]
+  "include": ["src"]
 }

@@ -1,38 +1,28 @@
 module.exports = {
-    env: {
-        browser: true,
-        es6: true,
-        node: true
-    },
     parser: "@typescript-eslint/parser",
     parserOptions: {
-        ecmaFeatures: {
-            experimentalObjectRestSpread: true,
-            jsx: true
-        },
         sourceType: "module"
     },
     extends: [
         'plugin:@typescript-eslint/recommended',
-        'plugin:react/recommended',
         'prettier/@typescript-eslint',
-        'plugin:prettier/recommended',
-        'prettier/react'
+        'plugin:prettier/recommended'
     ],
-    plugins: ['@typescript-eslint', 'react', 'prettier'],
+    plugins: ['@typescript-eslint', 'prettier'],
     rules: {
         "prettier/prettier": 2,
-        "react/prop-types": 0,
-        "react/display-name": 0,
         "eqeqeq": 0,
         // "no-undef": 0,
         "camelcase": 0,
         "no-unused-expressions": 0,
         "no-new": 0,
+        "prefer-rest-params": 0,
         // typescript
         "@typescript-eslint/no-explicit-any": 0,
         "@typescript-eslint/ban-ts-ignore": 0,
         "@typescript-eslint/triple-slash-reference": 0,
+        "@typescript-eslint/camelcase": 0,
+        "@typescript-eslint/no-this-alias": 0,
         '@typescript-eslint/explicit-function-return-type': [
             // 'warn',
             'off',
@@ -43,13 +33,6 @@ module.exports = {
         ]
     },
     globals: {
-        MI: "readonly",
-        routes: "readonly"
-    },
-    settings: {
-        "react": {
-            "pragma": "React",
-            "version": "detect", // React version. "detect" automatically picks the version you 
-        }
+        MI: "readonly"
     }
 };

@@ -3,12 +3,11 @@
  * @Author: tingtien
  * @Date: 2020-02-25 09:29:34
  * @LastEditors: Please set LastEditors
- * @LastEditTime: 2020-03-08 12:17:11
+ * @LastEditTime: 2020-03-08 14:56:40
  */
 import axios from "axios";
 import Utils from "./utils";
 import FMN from "@fm/network";
-import queryString from "query-string";
 
 /* Declaration Start */
 interface Config {
@@ -23,7 +22,7 @@ interface Config {
     AES_KEY: string; // 数据上报不依赖Token
   };
   log: {
-    enable: string | boolean;  // 默认关闭
+    enabled: string | boolean; // 默认关闭
     level: string[]; // 采集类型
   };
 }
@@ -45,7 +44,7 @@ interface Message {
 }
 
 interface Data {
-  session_id: string;
+  session_id: string; // 会话
   platform?: string; // 平台 h5 app
   user_id?: string;
   source_id?: string;
@@ -54,6 +53,7 @@ interface Data {
   product_version?: string;
   sceen_w?: number;
   sceen_h?: number;
+  entry: string; // 入口url地址
   navigator?: {
     user_agent?: string;
     app_name?: string;
@@ -66,11 +66,9 @@ interface Data {
 /* Declaration End */
 
 class Logs {
-  private store: Message[];
   public config: Config;
   private dataDefault: Data;
   constructor() {
-    this.store = [];
     this.config = {
       options: {
         platform: "h5",
@@ -83,34 +81,36 @@ class Logs {
         AES_KEY: ""
       },
       log: {
-        enable: false,
+        enabled: false,
         level: ["error", "info"]
       }
-    };  
+    };
     this.getConfig();
     this.dataDefault = {
+      entry: window.location.href,
       session_id: Utils.getSessionId(),
       navigator: Utils.getNavigator()
     };
     this._addEventListener();
-    this._network();
+    this.getNetwork();
   }
   private getConfig() {
     // @ts-ignore
     const config = window.fmbase && window.fmbase.fmia;
-    if (!config || !config.fmia) {
-      return
+    if (!config || !config.configOpen || !config.options) {
+      return;
     }
 
-    if (config.log && config.log.enable && config.log.enable != "1") {
-      console.info("[FMLOG] Log is unavailable")
-      return
+    if (config.log && config.log.enabled && config.log.enabled != "1") {
+      console.info("[FMLOG] Log is unavailable");
+      return;
     }
 
     this.config.options = config.options;
     this.config.configOpen = config.configOpen;
-
-    config.level && typeof config.level === "object" && (this.config.log.level = config.level)
+    config.level &&
+      typeof config.level === "object" &&
+      (this.config.log.level = config.level);
   }
   public save(options: Message, callback?: () => void) {
     if (!options.msg) {
@@ -143,59 +143,64 @@ class Logs {
         },
         api: {}
       }
-    }
+    };
     if (options.api && (options.api.request || options.api.response)) {
       data.message.api = {
         request: options.api.request,
         response: options.api.response
       };
     }
-    // this.store.push(data);
-    this.send(this.store, callback);
+    this.send(data, callback);
   }
   private send(item, callback?: () => void) {
-    const dataStr = JSON.stringify(item);
+    // const dataStr = JSON.stringify(item);
 
     const data = {
       device_session: "",
       timestamp: new Date().getTime(),
-      data: dataStr
+      data: item
     };
-    console.info("[FMIA] Data is sent:")
-    console.info(data)
-    FMN.requestDataNoToken(this.config.configOpen.URL, this.config.configOpen.AES_KEY, "", {
-      head: {
-        api_name: this.config.configOpen.API_NAME,
-        api_code: "",
-        module_code: "",
-        client_serial_no: ""
-      },
-      body: {
-        siteId: "",
-        appId: "",
-        merchantNo: "",
-        data: data
+    console.info("[FMLOG] Log is sent:");
+    console.info(data);
+    FMN.requestDataNoToken(
+      this.config.configOpen.URL,
+      this.config.configOpen.AES_KEY,
+      "",
+      {
+        head: {
+          api_name: this.config.configOpen.API_NAME,
+          api_code: "",
+          module_code: "",
+          client_serial_no: ""
+        },
+        body: {
+          siteId: "",
+          appId: "",
+          merchantNo: "",
+          data: data
+        }
       }
-    }).then(rs => {
-      if (rs && rs.success && rs.code === 200) {
-        console.info(`[FMIA] Data come form Server:`)
-        console.info(rs)
+    )
+      .then(rs => {
+        if (rs && rs.success && rs.code === 200) {
+          console.info(`[FMLOG] Data come form Server:`);
+          console.info(rs);
 
+          typeof callback === "function" && callback();
+        } else {
+          console.error(`[FMLOG] Data come form Server:`);
+          console.info(rs);
+
+          typeof callback === "function" && callback();
+        }
+      })
+      .catch(error => {
+        console.error(`[FMLOG] Data sent failed:`);
+        console.error(error);
         typeof callback === "function" && callback();
-
-      } else {
-        console.error(`[FMIA] Data come form Server:`)
-        console.info(rs)
-
-        typeof callback === "function" && callback();
-      }
-    }).catch(error => {
-      console.error(`[FMIA] Data sent failed:`);
-      console.error(error)
-      typeof callback === "function" && callback();
-    });
+      });
   }
-  private _network() {
+  private getNetwork() {
     let NETWORK_REQUEST = {};
     let NETWORK_RESPONSE = {};
     // Add a request interceptor
@@ -239,8 +244,7 @@ class Logs {
     const that = this;
     window.addEventListener(
       "error",
-      function () {
-        console.log("捕获到异常：", arguments[0], 1);
+      function() {
         that.save({
           code: 1,
           msg: `${arguments[0].target.href} cannot found`
@@ -248,8 +252,7 @@ class Logs {
       },
       true
     );
-    window.onerror = function () {
-      console.log(arguments, 3);
+    window.onerror = function() {
       return true;
     };
   }
@@ -260,47 +263,40 @@ const FMLOG = {
     logs.save({
       type: 1,
       code: 4,
-      msg:
-        typeof msg === "object"
-          ? JSON.stringify(msg)
-          : msg
+      msg: typeof msg === "object" ? JSON.stringify(msg) : msg
     });
   },
   info: (msg: string) => {
     let status = false;
-    logs.config && logs.config.log.level.forEach(item => {
-      if (item === "info") {
-        status = true;
-      }
-    })
+    logs.config &&
+      logs.config.log.level.forEach(item => {
+        if (item === "info") {
+          status = true;
+        }
+      });
     if (status) {
-      console.info("[FMLOG] info is not available")
+      console.info("[FMLOG] info is not available");
       logs.save({
         type: 2,
         code: 4,
-        msg:
-          typeof msg === "object"
-            ? JSON.stringify(msg)
-            : msg
+        msg: typeof msg === "object" ? JSON.stringify(msg) : msg
       });
     }
   },
   warn: (msg: string) => {
     let status = false;
-    logs.config && logs.config.log.level.forEach(item => {
-      if (item === "warn") {
-        status = true;
-      }
-    })
+    logs.config &&
+      logs.config.log.level.forEach(item => {
+        if (item === "warn") {
+          status = true;
+        }
+      });
     if (status) {
-      console.info("[FMLOG] warn is not available")
+      console.info("[FMLOG] warn is not available");
       logs.save({
         type: 3,
         code: 4,
-        msg:
-          typeof msg === "object"
-            ? JSON.stringify(msg)
-            : msg
+        msg: typeof msg === "object" ? JSON.stringify(msg) : msg
       });
     }
   }
