@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "strict": true,
+    "removeComments": false,
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "noImplicitAny": false,
+    "declaration": false,
+    "lib":["es2015", "dom"]
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "**/__tests__/*", "demo"]
+}
