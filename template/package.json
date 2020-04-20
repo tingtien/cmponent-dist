@@ -13,7 +13,7 @@
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
-    "mitan-component": "0.0.1-beta.5"
+    "mitan-component": "0.0.2-beta.12"
   },
   "files": [
     "lib/**/*"
