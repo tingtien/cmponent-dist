@@ -5,6 +5,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "_mitan": true,
+  "_typeScript": true,
   "_mitanType": "component",
   "scripts": {
     "test": "jest --config jestconfig.json"
