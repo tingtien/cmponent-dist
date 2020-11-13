@@ -3,10 +3,9 @@
   "version": "0.0.1",
   "description": "{{description}}",
   "main": "lib/index.js",
-  "types": "lib/index.d.ts",
   "_mitan": true,
-  "_typeScript": true,
   "_mitanType": "component",
+  "_mitanLib": true,
   "scripts": {
     "test": "jest --config jestconfig.json"
   },
@@ -14,9 +13,6 @@
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
-    "mitan-component": "0.0.2-beta.12"
-  },
-  "files": [
-    "lib/**/*"
-  ]
+    "mitan-component": "0.0.3-beta.9"
+  }
 }
